@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { BST } from '../src/algorithms/bst.js';
+import { adjacencyList, bfs, dfs, dijkstra } from '../src/algorithms/graph.js';
+import { knapsack } from '../src/algorithms/knapsack.js';
+import { RedBlackTree } from '../src/algorithms/redBlackTree.js';
+test('BST insertion, search and traversal', () => { const tree = new BST(); [5, 2, 8, 1, 3].forEach((x) => tree.insert(x)); assert.equal(tree.search(3).key, 3); assert.deepEqual(tree.inorder().map((x) => x.key), [1, 2, 3, 5, 8]); });
+test('graph traversals and shortest path', () => { const nodes = [{ id: 'a' }, { id: 'b' }, { id: 'c' }], graph = adjacencyList(nodes, [{ from: 'a', to: 'b', weight: 2 }, { from: 'b', to: 'c', weight: 1 }]); assert.deepEqual(bfs(graph, 'a'), ['a', 'b', 'c']); assert.deepEqual(dfs(graph, 'a'), ['a', 'b', 'c']); assert.deepEqual(dijkstra(graph, 'a', 'c'), { path: ['a', 'b', 'c'], cost: 3 }); });
+test('0/1 knapsack never exceeds capacity', () => { const result = knapsack([{ id: 'a', time: 3, value: 4 }, { id: 'b', time: 4, value: 5 }, { id: 'c', time: 2, value: 3 }], 6); assert.equal(result.totalValue, 8); assert.ok(result.totalTime <= 6); });
+test('red-black demonstration preserves ordering and root invariant', () => { const tree = new RedBlackTree(); [4, 2, 7].forEach((x) => tree.insert(x)); assert.equal(tree.validate().valid, true); assert.equal(tree.validate().rootBlack, true); });
