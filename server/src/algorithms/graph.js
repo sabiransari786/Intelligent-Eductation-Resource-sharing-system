@@ -22,11 +22,47 @@ export function dfs(graph, start) {
 export function dijkstra(graph, start, end) {
   if (!graph[start] || !graph[end]) throw new Error('Invalid graph node');
   const distance = Object.fromEntries(Object.keys(graph).map((key) => [key, Infinity]));
-  const previous = {}, remaining = new Set(Object.keys(graph)); distance[start] = 0;
-  while (remaining.size) {
-    const current = [...remaining].reduce((best, node) => distance[node] < distance[best] ? node : best);
-    remaining.delete(current); if (distance[current] === Infinity) break;
-    for (const edge of graph[current]) if (distance[current] + edge.weight < distance[edge.node]) { distance[edge.node] = distance[current] + edge.weight; previous[edge.node] = current; }
+  const previous = {};
+  const queue = [];
+  const push = (entry) => {
+    queue.push(entry);
+    let index = queue.length - 1;
+    while (index > 0) {
+      const parent = Math.floor((index - 1) / 2);
+      if (queue[parent][0] <= queue[index][0]) break;
+      [queue[parent], queue[index]] = [queue[index], queue[parent]];
+      index = parent;
+    }
+  };
+  const pop = () => {
+    const first = queue[0];
+    const last = queue.pop();
+    if (queue.length && last) {
+      queue[0] = last;
+      let index = 0;
+      while (true) {
+        const left = index * 2 + 1;
+        const right = left + 1;
+        let smallest = index;
+        if (left < queue.length && queue[left][0] < queue[smallest][0]) smallest = left;
+        if (right < queue.length && queue[right][0] < queue[smallest][0]) smallest = right;
+        if (smallest === index) break;
+        [queue[index], queue[smallest]] = [queue[smallest], queue[index]];
+        index = smallest;
+      }
+    }
+    return first;
+  };
+  distance[start] = 0; push([0, start]);
+  while (queue.length) {
+    const [currentDistance, current] = pop();
+    if (currentDistance !== distance[current]) continue;
+    if (current === end) break;
+    for (const edge of graph[current]) if (distance[current] + edge.weight < distance[edge.node]) {
+      distance[edge.node] = distance[current] + edge.weight;
+      previous[edge.node] = current;
+      push([distance[edge.node], edge.node]);
+    }
   }
   if (distance[end] === Infinity) return { path: [], cost: null };
   const path = []; for (let node = end; node; node = previous[node]) path.unshift(node);
